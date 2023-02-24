@@ -1,0 +1,483 @@
+library(data.table) # No used functions found
+library(plyr) # here ddply mutate
+library(zoo) # No used functions found
+library(tidyverse) # No used functions found
+library(tidyr) # %>% gather
+library(rstatix) # %>% gather mutate
+library(interactions) # No used functions found
+library(lme4) # No used functions found
+library(ggplot2) # ggplot aes geom_line theme_bw geom_point geom_errorbar labs scale_color_manual scale_linetype_manual scale_x_discrete
+library(ggpubr) # %>% mutate ggerrorplot
+library(here) # here
+library(rio) # import
+library(ggthemes)
+
+# Exp 1 = RT by Bin & Condition plot
+exp1Data <- import(here("data","Experiment1DataGoalChoiceRT.csv"),setclass="tbl_df")
+exp1Data <- exp1Data[!(exp1Data$condition=="hardgoal"),]
+
+exp1Data$condition <- as.factor(exp1Data$condition)
+exp1Gather <- exp1Data %>%
+  gather(key = "Bin", value = "BinRT", meanRank1, meanRank2, meanRank3, meanRank4, meanRank5)
+exp1Gather$Bin = as.numeric(exp1Gather$Bin)
+
+exp1 <- exp1Gather %>%
+  pivot_wider(names_from = Bin, values_from = BinRT)
+
+tg <- ddply(exp1Gather, c("condition", "Bin"), summarise,
+            N=length(!is.na(BinRT)),
+            mean=mean(BinRT),
+            sd=sd(BinRT),
+            se=sd/sqrt(N))        
+
+plot <- ggplot(data=tg, aes(x=Bin, y=mean, color= condition, linetype=condition)) +
+  geom_point() +
+  geom_line(aes(linetype=condition, color=condition)) +
+  theme_bw() +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.1) +
+  labs(x = "Bin", y = "Response Time (in seconds)",
+       color="Condition", linetype="Condition") +
+  scale_color_manual(name= "Condition", labels = c("Control", "Goal"), values = c("black", "dark green")) +
+  scale_linetype_manual(name="Condition", labels = c("Control", "Goal"), values=c(4,1))
+plot
+
+
+# Task-Unrelated Thoughts by Condition
+exp1Data %>%
+  mutate(TUTprop = NA)
+exp1Data$TUTprop <-  (exp1Data$sumTUT)/10
+
+ggerrorplot(exp1Data, x = "condition", y = "TUTprop", 
+            desc_stat = "mean_se", 
+            color = "condition", 
+            panel.labs = list(condition = c("Control", "Goal"))) +
+  labs(x = "Condition", y = "Proportion of Task-Unrelated Thoughts",
+       color="Condition") +
+  scale_color_manual(labels = c("Control", "Goal"), values = c("black", "dark green")) +
+  scale_x_discrete(labels=c("control" = "Control", "goal" = "Goal"))
+
+t.test(exp1Data$sumTUT~exp1Data$condition)
+t.test(exp1Data$TUTprop~exp1Data$condition)
+
+# Lapses by Condition
+ggerrorplot(exp1Data, x = "condition", y = "lapseSum", 
+            desc_stat = "mean_se", 
+            color = "condition", 
+            panel.labs = list(condition = c("Control", "Goal"))) +
+  labs(x = "Condition", y = "# of Lapses",
+       color="Condition") +
+  scale_color_manual(labels = c("Control", "Goal"), values = c("blue", "red")) +
+  scale_x_discrete(labels=c("control" = "Control", "goal" = "Goal"))
+
+t.test(exp1Data$lapseSum~exp1Data$condition)
+
+# Goal Commitment by Condition
+ggerrorplot(exp1Data, x = "condition", y = "goalCom", 
+            desc_stat = "mean_se", 
+            color = "condition")+
+  labs(x = "Condition", y = "Goal Commitment",
+       color="Condition") +
+  scale_color_manual(labels = c("Control", "Goal"), values = c("blue", "red")) +
+  scale_x_discrete(labels=c("control" = "Control", "goal" = "Goal"))
+
+
+
+# EXPERIMENT 2
+
+exp2Data <- import(here("data","Experiment2DataHOTonline.csv"),setclass="tbl_df")
+
+# Exp 1 = RT by Bin & Condition plot
+exp2Data$condition <- as.factor(exp2Data$condition)
+exp2Gather <- exp2Data %>%
+  gather(key = "Bin", value = "BinRT", meanRank1, meanRank2, meanRank3, meanRank4, meanRank5)
+exp2Gather$Bin = as.factor(exp2Gather$Bin)
+
+exp2 <- exp2Gather %>%
+  pivot_wider(names_from = Bin, values_from = BinRT)
+
+exp2RankSum <- ddply(exp2Gather, c("condition", "Bin"), summarise,
+            N=length(!is.na(BinRT)),
+            mean=mean(BinRT),
+            sd=sd(BinRT),
+            se=sd/sqrt(N))  
+exp2RankSum$Bin <- as.numeric(exp2RankSum$Bin)
+
+exp2Plot <- ggplot(data=exp2RankSum, aes(x=Bin, y=mean, color= condition, linetype = condition)) +
+  geom_line() +
+  theme_bw() +
+  geom_point() +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.1) +
+  labs(x = "Bin", y = "Response Time (in seconds)",
+       color="Condition", linetype="Condition") +
+  scale_color_manual(name= "Condition", labels = c("Control", " HOT Goal"), values = c("black", "dark green")) +
+  scale_linetype_manual(name="Condition", labels = c("Control", " HOT Goal"), values=c(4,1)) 
+exp2Plot
+
+
+
+# RT Ranked within Time Bin
+# exclude the control subjects (keep HOT subjects)
+exp2HOT <- exp2Data[!(exp2Data$condition=="control"),]
+
+exp2HOT$condition <- as.factor(exp2HOT$condition)
+exp2GatherHOT <- exp2HOT %>%
+  gather(key = "goalBlock", value = "gbRT", gb1_1,gb1_2,gb1_3,gb1_4,gb1_5,gb2_1,gb2_2,gb2_3,gb2_4,gb2_5,gb3_1,gb3_2,gb3_3,gb3_4,gb3_5)
+exp2GatherHOT$goalBlock = as.factor(exp2GatherHOT$goalBlock)
+
+exp2GatherHOT %>%
+  mutate(gBlock = NA,
+         bin = NA)
+
+exp2GatherHOT$gBlock <- 999
+exp2GatherHOT$bin <- 999
+
+exp2GatherHOT[,71] <- ifelse(exp2GatherHOT[,69] == "gb1_1", 1,
+                      ifelse(exp2GatherHOT[,69] == "gb1_2", 1,
+                      ifelse(exp2GatherHOT[,69] == "gb1_3", 1,
+                      ifelse(exp2GatherHOT[,69] == "gb1_4", 1,
+                      ifelse(exp2GatherHOT[,69] == "gb1_5", 1,
+                      ifelse(exp2GatherHOT[,69] == "gb2_1", 2,
+                      ifelse(exp2GatherHOT[,69] == "gb2_2", 2,
+                      ifelse(exp2GatherHOT[,69] == "gb2_3", 2,
+                      ifelse(exp2GatherHOT[,69] == "gb2_4", 2,
+                      ifelse(exp2GatherHOT[,69] == "gb2_5", 2,
+                      ifelse(exp2GatherHOT[,69] == "gb3_1", 3,
+                      ifelse(exp2GatherHOT[,69] == "gb3_2", 3,
+                      ifelse(exp2GatherHOT[,69] == "gb3_3", 3,
+                      ifelse(exp2GatherHOT[,69] == "gb3_4", 3,
+                      ifelse(exp2GatherHOT[,69] == "gb3_5", 3,999)))))))))))))))
+
+exp2GatherHOT[,72] <- ifelse(exp2GatherHOT[,69] == "gb1_1", 1,
+                      ifelse(exp2GatherHOT[,69] == "gb1_2", 2,
+                      ifelse(exp2GatherHOT[,69] == "gb1_3", 3,
+                      ifelse(exp2GatherHOT[,69] == "gb1_4", 4,
+                      ifelse(exp2GatherHOT[,69] == "gb1_5", 5,
+                      ifelse(exp2GatherHOT[,69] == "gb2_1", 1,
+                      ifelse(exp2GatherHOT[,69] == "gb2_2", 2,
+                      ifelse(exp2GatherHOT[,69] == "gb2_3", 3,
+                      ifelse(exp2GatherHOT[,69] == "gb2_4", 4,
+                      ifelse(exp2GatherHOT[,69] == "gb2_5", 5,
+                      ifelse(exp2GatherHOT[,69] == "gb3_1", 1,
+                      ifelse(exp2GatherHOT[,69] == "gb3_2", 2,
+                      ifelse(exp2GatherHOT[,69] == "gb3_3", 3,
+                      ifelse(exp2GatherHOT[,69] == "gb3_4", 4,
+                      ifelse(exp2GatherHOT[,69] == "gb3_5", 5,999)))))))))))))))
+
+exp2HOTBlockSum <- ddply(exp2GatherHOT, c("gBlock", "bin"), summarise,
+                       N=length(!is.na(gbRT)),
+                       mean=mean(gbRT),
+                       sd=sd(gbRT),
+                       se=sd/sqrt(N)) 
+exp2HOTBlockSum$gBlock <- as.factor(exp2HOTBlockSum$gBlock)
+
+plotHOT <- ggplot(data=exp2HOTBlockSum, aes(x=bin, y=mean, color= gBlock, fill = gBlock)) +
+  geom_line() +
+  theme_bw() +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.1) +
+  labs(x = "Bin", y = "Response Time (in seconds)",
+       color="Goal Block") +
+  scale_color_manual(labels = c("1","2","3"), values = c("blue", "red", "green"))
+plotHOT
+
+plotHOT + scale_x_discrete(name ="Block", 
+                         limits=c("1","2","3"))
+
+
+
+# Task-Unrelated Thoughts by Condition
+exp2Data %>%
+  mutate(TUTprop = NA)
+exp2Data$TUTprop <-  (exp2Data$sumTUT)/10
+
+ggerrorplot(exp2Data, x = "condition", y = "TUTprop", 
+            desc_stat = "mean_se", 
+            color = "condition")+
+  labs(x = "Condition", y = "Proportion of Task-Unrelated Thoughts",
+       color="Condition") +
+  scale_color_manual(labels = c("Control", "HOT Goal"), values = c("black", "dark green")) +
+  scale_x_discrete(labels=c("control" = "Control", "hotgoal" = "HOT Goal"))
+  
+
+# Lapses by Condition
+
+exp2LapseSumm <- ddply(exp2Data, c("condition"), summarise,
+                         N=length(lapseSum),
+                         mean=mean(lapseSum),
+                         sd=sd(lapseSum),
+                         se=sd/sqrt(N)) 
+
+plotLapse <- ggplot(data=exp2LapseSumm, aes(x=condition, y=mean, color= condition, fill = condition)) +
+  geom_line() +
+  theme_bw() +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.1) +
+  labs(x = "Condition", y = "# of Lapses",
+       color="Condition") +
+  scale_color_manual(labels = c("Control","HOT Goal"), values = c("blue", "red"))
+plotLapse
+
+ggerrorplot(exp2Data, x = "condition", y = "lapseSum", 
+            desc_stat = "mean_se", 
+            color = "condition") +
+  labs(x = "Condition", y = "# of Lapses",
+       color="Condition") +
+  scale_color_manual(labels = c("Control", "HOT Goal"), values = c("blue", "red")) +
+  scale_x_discrete(labels=c("control" = "Control", "hotgoal" = "HOT Goal"))
+
+
+# Goal Commitment by Condition
+ggerrorplot(exp2Data, x = "condition", y = "goalCom", 
+            desc_stat = "mean_se", 
+            color = "condition") +
+  labs(x = "Condition", y = "Goal Commitment",
+       color="Condition") +
+  scale_color_manual(labels = c("Control", "HOT Goal"), values = c("blue", "red")) +
+  scale_x_discrete(labels=c("control" = "Control", "hotgoal" = "HOT Goal"))
+
+
+# Things by TimeBlock (Probably for Hidden Slides)
+
+# Response Time by Time Block
+exp2Data$condition <- as.factor(exp2Data$condition)
+exp2Gather <- exp2Data %>%
+  gather(key = "Block", value = "BlockRT", gbTime1, gbTime2, gbTime3)
+exp2Gather$Block = as.factor(exp2Gather$Block)
+
+exp2Gather[,81] <- ifelse(exp2Gather[,81] == "gbTime1", 1, ifelse(exp2Gather[,81] == "gbTime2", 2, ifelse(exp2Gather[,81] == "gbTime3", 3, 999)))
+
+exp2BlockSumm <- ddply(exp2Gather, c("condition", "Block"), summarise,
+                       N=length(!is.na(BlockRT)),
+                       mean=mean(BlockRT),
+                       sd=sd(BlockRT),
+                       se=sd/sqrt(N)) 
+exp2BlockSumm$Block <- as.numeric(exp2BlockSumm$Block)
+
+plot2 <- ggplot(data=exp2BlockSumm, aes(x=Block, y=mean, color= condition, linetype = condition)) +
+  geom_line(aes(linetype=condition, color=condition)) +
+  theme_bw() +
+  geom_point() +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.1) +
+  labs(x = "Block", y = "Response Time (in seconds)",
+       color="Condition", linetype="Condition") +
+  scale_color_manual(name="Condition", labels = c("Control", "HOT Goal"), values = c("black", "dark green")) +
+  scale_linetype_manual(name="Condition", labels = c("Control", "HOT Goal"), values=c(4,1)) 
+plot2
+
+plot2 + scale_x_discrete(name ="Block", 
+                         limits=c("1","2","3"))
+
+# Task-Unrelated Thoughts by Time Block
+exp2Data$condition <- as.factor(exp2Data$condition)
+exp2GatherTUT <- exp2Data %>%
+  gather(key = "TUTBlock", value = "numTUT", gb1TUT, gb2TUT, gb3TUT)
+exp2GatherTUT$TUTBlock = as.factor(exp2GatherTUT$TUTBlock)
+
+exp2GatherTUT[,81] <- ifelse(exp2GatherTUT[,81] == "gb1TUT", 1, ifelse(exp2GatherTUT[,81] == "gb2TUT", 2, ifelse(exp2GatherTUT[,81] == "gb3TUT", 3, 999)))
+
+exp2TUTSumm <- ddply(exp2GatherTUT, c("condition", "TUTBlock"), summarise,
+                       N=length(!is.na(numTUT)),
+                       mean=mean(numTUT),
+                       sd=sd(numTUT),
+                       se=sd/sqrt(N)) 
+
+plot3 <- ggplot(data=exp2TUTSumm, aes(x=TUTBlock, y=mean, color= condition, linetype = condition)) +
+  geom_line() +
+  theme_bw() +
+  geom_point() +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.1) +
+  labs(x = "Block", y = "# of Task-Unrelated Thoughts",
+       color="Condition", linetype="Condition") +
+  scale_color_manual(labels = c("Control", "HOT Goal"), values = c("blue", "red")) +
+  scale_linetype_manual(name="Condition", labels = c("Control", "HOT Goal"), values=c(1,3)) 
+plot3 + scale_x_discrete(name ="Block", 
+                         limits=c("1","2","3"))
+
+# Lapses by Time Block
+
+exp2Data$condition <- as.factor(exp2Data$condition)
+exp2GatherLapse <- exp2Data %>%
+  gather(key = "LapseBlock", value = "numLapses", gb1Lapses, gb2Lapses, gb3Lapses)
+exp2GatherLapseT$LapseBlock = as.factor(exp2GatherLapse$LapseBlock)
+
+exp2GatherLapse[,81] <- ifelse(exp2GatherLapse[,81] == "gb1Lapses", 1, ifelse(exp2GatherLapse[,81] == "gb2Lapses", 2, ifelse(exp2GatherLapse[,81] == "gb3Lapses", 3, 999)))
+
+exp2LapseSumm <- ddply(exp2GatherLapse, c("condition", "LapseBlock"), summarise,
+                     N=length(!is.na(numLapses)),
+                     mean=mean(numLapses),
+                     sd=sd(numLapses),
+                     se=sd/sqrt(N)) 
+
+plot4 <- ggplot(data=exp2LapseSumm, aes(x=LapseBlock, y=mean, color= condition, linetype = condition)) +
+  geom_line() +
+  theme_bw() +
+  geom_point() +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.1) +
+  labs(x = "Block", y = "# of Lapses",
+       color="Condition", linetype="Condition") +
+  scale_color_manual(name="Condition", labels = c("Control", "HOT Goal"), values = c("blue", "red")) +
+  scale_linetype_manual(name="Condition", labels = c("Control", "HOT Goal"), values=c(1,3)) 
+plot4 + scale_x_discrete(name ="Block", 
+                         limits=c("1","2","3"))
+
+
+
+# EXPERIMENT 3
+
+exp3Data <- import(here("data","Experiment3Data _HOTinPerson.sav"),setclass="tbl_df")
+# RT by Bin & Condition plot
+
+exp3Data$condition <- as.factor(exp3Data$condition)
+exp3Gather <- exp3Data %>%
+  gather(key = "Bin", value = "BinRT", meanRank1, meanRank2, meanRank3, meanRank4, meanRank5)
+exp3Gather$Bin = as.factor(exp3Gather$Bin)
+
+exp3Gather[,19] <- ifelse(exp3Gather[,19] == "meanRank1", 1, 
+                          ifelse(exp3Gather[,19] == "meanRank2", 2, 
+                                 ifelse(exp3Gather[,19] == "meanRank3", 3, 
+                                        ifelse(exp3Gather[,19] == "meanRank4", 4, 
+                                               ifelse(exp3Gather[,19] == "meanRank5", 5, 999)))))
+
+exp3RankSum <- ddply(exp3Gather, c("condition", "Bin"), summarise,
+                     N=length(!is.na(BinRT)),
+                     mean=mean(BinRT),
+                     sd=sd(BinRT),
+                     se=sd/sqrt(N))        
+
+exp3RankSum$Bin <- as.numeric(exp3RankSum$Bin)
+exp3Plot <- ggplot(data=exp3RankSum, aes(x=Bin, y=mean, color= condition, linetype = condition)) +
+  geom_line() +
+  theme_bw() +
+  geom_point() +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.1) +
+  labs(x = "Bin", y = "Response Time (in milliseconds)",
+       color="Condition", linetype="Condition") +
+  scale_color_manual(name= "Condition", labels = c("Control", " HOT Goal"), values = c("black", "dark green")) +
+  scale_linetype_manual(name="Condition", labels = c("Control", " HOT Goal"), values=c(4,1)) 
+exp3Plot
+
+
+# Task-Unrelated Thoughts by Condition
+exp3Data %>%
+  mutate(TUTprop = NA)
+exp3Data$TUTprop <-  (exp3Data$sumTUT)/15
+
+ggerrorplot(exp3Data, x = "condition", y = "TUTprop", 
+            desc_stat = "mean_se", 
+            color = "condition")+
+  labs(x = "Condition", y = "Proportion of Task-Unrelated Thoughts",
+       color="Condition") +
+  scale_color_manual(labels = c("Control", "HOT Goal"), values = c("blue", "red")) +
+  scale_x_discrete(labels=c("control" = "Control", "hotgoal" = "HOT Goal"))
+
+# Lapses by Condition
+
+exp3LapseSumm <- ddply(exp3Data, c("condition"), summarise,
+                       N=length(lapseSum),
+                       mean=mean(lapseSum),
+                       sd=sd(lapseSum),
+                       se=sd/sqrt(N)) 
+
+ggerrorplot(exp3Data, x = "condition", y = "lapseSum", 
+            desc_stat = "mean_se", 
+            color = "condition") +
+  labs(x = "Condition", y = "# of Lapses",
+       color="Condition") +
+  scale_color_manual(labels = c("Control", "HOT Goal"), values = c("blue", "red")) +
+  scale_x_discrete(labels=c("control" = "Control", "hotgoal" = "HOT Goal"))
+
+
+# Goal Commitment by Condition
+ggerrorplot(exp3Data, x = "condition", y = "goalCom", 
+            desc_stat = "mean_se", 
+            color = "condition") +
+  labs(x = "Condition", y = "Goal Commitment",
+       color="Condition") +
+  scale_color_manual(labels = c("Control", "HOT Goal"), values = c("blue", "red")) +
+  scale_x_discrete(labels=c("control" = "Control", "hotgoal" = "HOT Goal"))
+
+# Things by TimeBlock (Probably for Hidden Slides)
+
+# Response Time by Time Block
+exp3Data$condition <- as.factor(exp3Data$condition)
+exp3Gather <- exp3Data %>%
+  gather(key = "Block", value = "BlockRT", rtBlock1, rtBlock2, rtBlock3)
+exp3Gather$Block = as.factor(exp3Gather$Block)
+
+exp3Gather[,22] <- ifelse(exp3Gather[,22] == "rtBlock1", 1, ifelse(exp3Gather[,22] == "rtBlock2", 2, ifelse(exp3Gather[,22] == "rtBlock3", 3, 999)))
+
+exp3BlockSumm <- ddply(exp3Gather, c("condition", "Block"), summarise,
+                       N=length(!is.na(BlockRT)),
+                       mean=mean(BlockRT/1000),
+                       sd=sd(BlockRT/1000),
+                       se=(sd/sqrt(N)))
+exp3BlockSumm <- exp3BlockSumm %>%
+
+plot2 <- ggplot(data=exp3BlockSumm, aes(x=Block, y=mean, color= condition, linetype = condition)) +
+  geom_line() +
+  theme_bw() +
+  geom_point() +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.1) +
+  labs(x = "Block", y = "Response Time (in seconds)",
+       color="Condition", linetype="Condition") +
+  scale_color_manual(name="Condition", labels = c("Control", "HOT Goal"), values = c("blue", "red")) +
+  scale_linetype_manual(name="Condition", labels = c("Control", "HOT Goal"), values=c(1,3)) 
+plot2
+
+plot2 + scale_x_discrete(name ="Block", 
+                         limits=c("1","2","3"))
+
+# Task-Unrelated Thoughts by Time Block
+exp3Data$condition <- as.factor(exp3Data$condition)
+exp3GatherTUT <- exp3Data %>%
+  gather(key = "TUTBlock", value = "numTUT", TUTBlock1, TUTBlock2, TUTBlock3)
+exp3GatherTUT$TUTBlock = as.factor(exp3GatherTUT$TUTBlock)
+
+exp3GatherTUT[,22] <- ifelse(exp3GatherTUT[,22] == "TUTBlock1", 1, ifelse(exp3GatherTUT[,22] == "TUTBlock2", 2, ifelse(exp3GatherTUT[,22] == "TUTBlock3", 3, 999)))
+
+exp3TUTSumm <- ddply(exp3GatherTUT, c("condition", "TUTBlock"), summarise,
+                     N=length(!is.na(numTUT)),
+                     mean=mean(numTUT),
+                     sd=sd(numTUT),
+                     se=sd/sqrt(N)) 
+
+plot3 <- ggplot(data=exp3TUTSumm, aes(x=TUTBlock, y=mean, color= condition, linetype = condition)) +
+  geom_line() +
+  theme_bw() +
+  geom_point() +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.1) +
+  labs(x = "Block", y = "# of Task-Unrelated Thoughts",
+       color="Condition", linetype="Condition") +
+  scale_color_manual(labels = c("Control", "HOT Goal"), values = c("blue", "red")) +
+  scale_linetype_manual(name="Condition", labels = c("Control", "HOT Goal"), values=c(1,3))
+
+plot3 + scale_x_discrete(name ="Block", 
+                         limits=c("1","2","3"))
+
+# Lapses by Time Block
+
+exp3Data$condition <- as.factor(exp3Data$condition)
+exp3GatherLapse <- exp3Data %>%
+  gather(key = "LapseBlock", value = "numLapses", lapseBlock1, lapseBlock2, lapseBlock3)
+exp3GatherLapseT$LapseBlock = as.factor(exp3GatherLapse$LapseBlock)
+
+exp3GatherLapse[,22] <- ifelse(exp3GatherLapse[,22] == "lapseBlock1", 1, ifelse(exp3GatherLapse[,22] == "lapseBlock2", 2, ifelse(exp3GatherLapse[,22] == "lapseBlock3", 3, 999)))
+
+exp3LapseSumm <- ddply(exp3GatherLapse, c("condition", "LapseBlock"), summarise,
+                       N=length(!is.na(numLapses)),
+                       mean=mean(numLapses),
+                       sd=sd(numLapses),
+                       se=sd/sqrt(N)) 
+
+plot4 <- ggplot(data=exp3LapseSumm, aes(x=LapseBlock, y=mean, color= condition, linetype = condition)) +
+  geom_line() +
+  theme_bw() +
+  geom_point() +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.1) +
+  labs(x = "Block", y = "# of Lapses",
+       color="Condition", linetype="Condition") +
+  scale_color_manual(name="Condition", labels = c("Control", "HOT Goal"), values = c("blue", "red")) +
+  scale_linetype_manual(name="Condition", labels = c("Control", "HOT Goal"), values=c(1,3)) 
+plot4 + scale_x_discrete(name ="Block", 
+                         limits=c("1","2","3"))
+
+
+# EXPERIMENT 3

@@ -1,0 +1,68 @@
+library(data.table)
+library(zoo)
+library(tidyverse)
+
+file.choose()
+
+data <- read_csv("/Users/deannastrayer/Downloads/2021:2022 School Year/2G/Eye4CRT G2 PILOT 2 PEOPLE.csv")
+
+data$Cond <- ifelse(data$ExperimentName == '(1) 4CRTprobeTETPROdeanna', 'goal', 'control')
+
+data2 <- data %>%
+  mutate(goodRTs = ifelse(data$Slide1.ACC == 1 & data$location > 0, data$Slide1.RT, NA))
+
+data3 <- data2 %>%
+  mutate(correctRTs = ifelse(data2$goodRTs >= 150 & data2$goodRTs <= 10000, data2$goodRTs, NA))
+
+data4 <- data3 %>% 
+  arrange(Subject, correctRTs) %>%
+  group_by(Subject) %>% 
+  mutate(rank = rank(correctRTs, na.last = 'keep')) %>%
+  mutate(rt_Bin = cut(rank, breaks = 5, labels = seq(1,5))) %>%
+  mutate(meanRT = mean(correctRTs, na.rm=T)) %>%
+  mutate(sdRT = sd(correctRTs, na.rm=T)) %>%
+  mutate(lapseCutoff = meanRT*2) %>%
+  mutate(YNlapse = ifelse(correctRTs > lapseCutoff, 1, 0)) %>%
+  mutate(ProbeB1 = ifelse(Running == 'Triallist', probe.RESP, NA)) %>%
+  mutate(ProbeB2 = ifelse(Running == 'TrialList2', probe.RESP, NA)) %>%
+  mutate(ProbeB3 = ifelse(Running == 'TrialList3', probe.RESP, NA)) %>%
+  mutate(TUTB1 = sum(ProbeB1 >=3, na.rm = T)) %>%
+  mutate(TUTB2 = sum(ProbeB2 >=3, na.rm = T)) %>%
+  mutate(TUTB3 = sum(ProbeB3 >=3, na.rm = T)) %>%
+  mutate(B1propOFF = TUTB1/5, na.rm=T) %>%
+  mutate(B2propOFF = TUTB2/5, na.rm=T) %>%
+  mutate(B3propOFF = TUTB3/5, na.rm=T)
+
+summary <- data4 %>%
+  group_by(Subject) %>% 
+  summarize(subject = mean(Subject),
+            condition = first(Cond),
+            sumCorrectRT = sum(correctRTs >=0, na.rm = T),
+            meanRT = mean(correctRTs, na.rm = T),
+            meanACC = mean(Slide1.ACC, na.rm = T),
+            lapseSum = sum(correctRTs>lapseCutoff, na.rm = T),
+            sumTUT = sum(probe.RESP>=3, na.rm = T),
+            propTUT = sumTUT/15,
+            
+            meanRank1 = mean(ifelse(rt_Bin == 1, correctRTs, NA), na.rm = T),
+            meanRank2 = mean(ifelse(rt_Bin == 2, correctRTs, NA), na.rm = T),
+            meanRank3 = mean(ifelse(rt_Bin == 3, correctRTs, NA), na.rm = T),
+            meanRank4 = mean(ifelse(rt_Bin == 4, correctRTs, NA), na.rm = T),
+            meanRank5 = mean(ifelse(rt_Bin == 5, correctRTs, NA), na.rm = T),
+            
+            rtBlock1 = mean(ifelse(Running == 'Triallist', correctRTs, NA), na.rm = T),
+            rtBlock2 = mean(ifelse(Running == 'TrialList2', correctRTs, NA), na.rm = T),
+            rtBlock3 = mean(ifelse(Running == 'TrialList3', correctRTs, NA), na.rm = T),
+            
+            lapseBlock1 = sum(ifelse(Running == 'Triallist', YNlapse, NA), na.rm=T),
+            lapseBlock2 = sum(ifelse(Running == 'TrialList2', YNlapse, NA), na.rm=T),
+            lapseBlock3 = sum(ifelse(Running == 'TrialList3', YNlapse, NA), na.rm=T),
+            
+            TUTBlock1 = mean(TUTB1),
+            TUTBlock2 = mean(TUTB2),
+            TUTBlock3 = mean(TUTB3)
+)
+
+outputName = paste('/Users/deannastrayer/Downloads/2021:2022 School Year/Eye4CRT/Eye4CRT/Eye4CRT CleanAgg.csv')
+
+write_csv(summary, outputName)

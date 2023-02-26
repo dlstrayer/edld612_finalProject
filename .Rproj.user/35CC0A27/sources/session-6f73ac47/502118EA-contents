@@ -1,0 +1,140 @@
+---
+title: "Lab 3"
+author: "Deanna Strayer"
+date: "2023-02-13"
+output:
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE,
+                      warning = FALSE,
+                      fig.width = 10,
+                      fig.height = 10)
+```
+
+## Getting Started
+
+You can download the `transit_cost.csv` data from the website.
+
+```{r,eval=TRUE,echo=TRUE}
+
+require(tidyverse)
+require(lubridate)
+require(ungeviz) 
+require(ggtext)
+require(ggrepel)
+require(ggforce)
+library(here)
+library(rio)
+library(grid)
+
+transit_cost <- import(here("data",'./transit_cost (1).csv'))
+```
+
+## Question 1
+
+
+```{r}
+
+transit_cost <- transit_cost[-538,]
+transit_cost <- transit_cost[-539,]
+transit_cost <- transit_cost[-541,]
+transit_cost <- transit_cost[-542,]
+transit_cost <- transit_cost[-543,]
+transit_cost <- transit_cost[-544,]
+transit_cost <- transit_cost[-540,]
+transit_cost <- transit_cost[-542,]
+
+transitAv <- transit_cost %>%
+  group_by(country, city) %>%
+  summarize(length = mean(length,na.rm = T),
+            real_cost = mean(as.numeric(real_cost)),
+            stations = sum(stations))
+
+transitAv2 <- transitAv %>%
+  group_by(country, city) %>%
+  summarize(numSys = str_count(city),
+            length = mean(length,na.rm = T),
+            real_cost = mean(real_cost,na.rm = T),
+            stations = mean(stations,na.rm = T))
+
+india <- transitAv2 %>%
+  filter(country == "IN")
+  
+plot1 <- ggplot(data=transitAv2, aes(x=length, y=real_cost, label=city)) +
+  geom_point(aes(size=numSys), color="gray") +
+  scale_size_binned(limits=c(0, 25), 
+                    breaks=c(5,10,20)) +
+  scale_y_log10() +
+  scale_x_log10() 
+  
+plot1 + geom_point(data=india, aes(size=numSys), color="purple") +
+  scale_size_binned(limits=c(0, 25), 
+                    breaks=c(5,10,20), 
+                    aes(label="Number of Transit Systems")) +
+  geom_text_repel(data=india) +
+  theme_minimal() +
+  #theme(legend.position="bottom",plot.title = element_markdown()) +
+  ylim(0,100000) +
+  xlim(0,150) +
+  scale_y_log10(limits=c(NA,100000), 
+                breaks=c(1000,10000,100000), 
+                labels=c("$1,000","$10,000","$100,000")) +
+  scale_x_log10(limits=c(NA,190)) +
+   labs(title = "<span style='font-size:20pt;'>**Longer transit systems tend to cost more**<br>
+                  <span style='color:purple;font-size:14pt;'> India
+                  <span style='color:black;font-size:14pt;'>has amongst the most transit systems in the world</span>",
+        caption= "Note the axes are on the log scale",
+         x="Average Length",
+         y="Average Cost") +
+  theme(legend.position="bottom", plot.title = element_markdown()) 
+
+```
+
+
+\pagebreak
+
+## Question 2
+
+
+```{r}
+
+us <- transitAv2 %>%
+  filter(country == "US")
+  
+
+plot2 <- ggplot(data=transitAv2, 
+                aes(x=length, y=real_cost, label=city)) +
+  geom_point(aes(size=numSys), 
+             color="gray") +
+  scale_size_binned(limits=c(0, 25), 
+                    breaks=c(5,10,20)) +
+  scale_y_log10() +
+  scale_x_log10() 
+  
+plot2 + geom_point(data=us, aes(size=numSys), color="darkblue") +
+  scale_size_binned(limits=c(0, 25), 
+                    breaks=c(5,10,20), 
+                    aes(label="Number of Transit Systems")) +
+  scale_y_log10(limits=c(NA,100000), 
+                breaks=c(1000,10000,100000), 
+                labels=c("$1,000","$10,000","$100,000")) +
+  scale_x_log10(limits=c(NA,150)) +
+  geom_mark_ellipse(data=us, 
+                    aes(label="United States", color="red"), 
+                    label.colour="darkblue", 
+                    con.colour="red", show.legend = F)  +
+  geom_label_repel(data=us,
+                   box.padding = .4,
+                   fill = "white") +
+  theme_minimal() +
+  labs(title = "<span style='font-size:20pt;'>**Longer transit systems tend to cost more**<br>
+                  <span style='color:black;font-size:14pt;'> United States has the most expensive transit systems (average cost per average length)",
+        caption= "Note the axes are on the log scale",
+         x="Average Length",
+         y="Average Cost") +
+  theme(legend.position="bottom", plot.title = element_markdown()) 
+  
+```
+

@@ -1,5 +1,5 @@
 ---
-title: "Deanna"
+title: "Effects of Goal-Setting on Sustained Attention"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
@@ -21,6 +21,10 @@ library(zoo)
 library(here)
 library(tcltk)
 library(haven)
+library(ggrepel)
+library(gganimate)
+library(hrbrthemes)
+
 
 knitr::opts_chunk$set(fig.width=12, fig.height=9, fig.align = "center", message = FALSE, error = FALSE, warning = FALSE)
 #theme_set(theme_minimal(base_size = 15))
@@ -30,7 +34,7 @@ vis1data <- as.data.frame(read_sav("Data/vis1Data.sav"))
 vis3data <- read_sav("Data/vis3DataTEST.sav")
 ```
 
-# Viz 1
+# Vis 1
 
 Column {data-width=400}
 -----------------------------------------------------------------------
@@ -38,18 +42,35 @@ Column {data-width=400}
 ### Final Figure 1
 
 ```{r vis 13, eval=TRUE}
-plot13 <- ggplot(data=vis1data, aes(x=Rank, y=mean, color= as.factor(condition), linetype=as.factor(condition))) +
-  geom_point() +
-  geom_line(aes(linetype=as.factor(condition), color=as.factor(condition))) +
+plot13 <- ggplot(data=vis1data, aes(x=Rank, y=mean, color= as.factor(condition), linetype=as.factor(condition), label=as.factor(condition))) +
+  geom_point(size=4) +
+  geom_line(aes(linetype=as.factor(condition), color=as.factor(condition)),size=2) +
   theme_bw() +
-  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.1) +
-  labs(x = "Bin", y = "Response Time (in milliseconds)",
-       color="Condition", linetype="Condition") +
-  scale_color_manual(name= "Condition", labels = c("Control", "Goal"), values = c("black", "dark green")) +
-  scale_linetype_manual(name="Condition", labels = c("Control", "Goal"), values=c(4,1)) +
-  theme(axis.text.x = element_text(size = 60))+
-  theme_minimal()
+  labs(x = "Bin", 
+       y = "Response Time (in milliseconds)",
+       color="Condition", 
+       linetype="Condition", 
+       title="Goal-Setting Reduces Attention Lapses",
+       subtitle="Response Time Distribution on a 4-Choice Response Time Task",
+       caption="Note: Bin = response times rank-ordered smallest to largest (1 = fastest, 5 = slowest).
+       Subjects with non-specific goal were slower overall and had significantly longer slow RTs 
+       (shown in Bin 5; a measure of attention lapses)") +
+  scale_color_manual(name= "Condition", labels = c("No-Goal", "Goal"), values = c("dark green", "black")) +
+  scale_linetype_manual(name="Condition", labels = c("No-Goal", "Goal"), values=c(1,4)) +
+  geom_label_repel(data = filter(vis1data, Rank==5), 
+                   aes(label = condition),
+                   nudge_x = -.6,
+                   segment.size  = 0.3,
+                   segment.color = "grey50",
+                   direction     = "x",
+                   na.rm = TRUE) +
+  theme_minimal() +
+  theme(legend.position="none",
+        axis.title=element_text(size=24,face="bold"),
+        axis.text=element_text(size=24),
+        title=element_text(size=24))
 plot13
+
 
 ```
 
@@ -69,7 +90,9 @@ plot12 <- ggplot(data=vis1data, aes(x=Rank, y=mean, color= as.factor(condition),
   labs(x = "Bin", y = "Response Time (in milliseconds)",
        color="Condition", linetype="Condition") +
   scale_color_manual(name= "Condition", labels = c("Control", "Goal"), values = c("black", "dark green")) +
-  scale_linetype_manual(name="Condition", labels = c("Control", "Goal"), values=c(4,1))
+  scale_linetype_manual(name="Condition", labels = c("Control", "Goal"), values=c(4,1)) +
+  theme(axis.text.x = element_text(size = 60))+
+  theme_minimal()
 plot12
 
 
@@ -93,3 +116,41 @@ plot11
 ```
 
 > This is the first attempt.
+
+
+
+# Vis 2
+
+Column {data-width=200}
+----------------------
+
+```{r vis 23, eval=TRUE}
+
+
+gif_file('pupil by time bin.gif')
+#gifski_renderer(file = 'pupil by time bin.gif', loop = TRUE, width = NULL, height = NULL)
+
+```
+
+> This is Vis 2.
+
+```{r vis 22, eval=TRUE}
+
+
+
+
+
+```
+
+> This was the second version.
+
+
+```{r vis 21, eval=TRUE}
+
+
+
+
+
+```
+
+> This was the first version.

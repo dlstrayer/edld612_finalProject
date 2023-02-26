@@ -3,7 +3,7 @@
     "path": "~/Downloads/2022:2023 School Year/EDLD 612/labs/testingFlex/testingScript.Rmd",
     "project_path": null,
     "type": "r_markdown",
-    "hash": "3766150059",
+    "hash": "0",
     "contents": "",
     "dirty": false,
     "created": 1677278038461.0,
@@ -12,15 +12,15 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "36,23",
-        "scrollLine": "30"
+        "cursorPosition": "7,0",
+        "scrollLine": "0"
     },
     "folds": "",
-    "lastKnownWriteTime": 1677376424,
+    "lastKnownWriteTime": 1677377838,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1677376424592,
+    "last_content_update": 1677377838599,
     "read_only": false,
     "read_only_alternatives": []
 }

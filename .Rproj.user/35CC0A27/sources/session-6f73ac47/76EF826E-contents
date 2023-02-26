@@ -10,6 +10,7 @@ library(reshape2)
 #### Potential Plot 3, First Draft
 
 pupilData <- import(here("data","pupils binned by block FINAL.sav"),setclass="tbl_df")
+pupilData <- read_sav("Data/pupils binned by block FINAL.sav")
 pupilData2 <- pupilData[,-2]
 
 # rearrange dataset
@@ -24,6 +25,8 @@ library(gganimate)
 library(hrbrthemes)
 library(plyr) 
 plotData2 <- ddply(plotData, .(Subject), mutate, bin = seq_along(variable.y))
+
+write_sav(plotData2, path = paste(dir, "/", "vis3dataTEST.sav", sep = ""))
 
 plotData2 %>%
   ggplot( aes(x=bin, y=value.y, group=value.x, color=value.x)) +
@@ -47,6 +50,10 @@ behav$condition <- as.factor(behav$condition)
 behav1 <- behav %>%
   gather(key = "Rank", value = "BinRT", meanRank1, meanRank2, meanRank3, meanRank4, meanRank5)
 
+behavt <- behav1 %>%
+  group_by(Rank) %>%
+  mutate(meanRT = mean(BinRT))
+
 behav2 <- behav1 %>%
   pivot_wider(names_from = Rank, values_from = BinRT)
 
@@ -62,6 +69,17 @@ dir <- tclvalue(tkchooseDirectory())
 write_sav(tg, path = paste(dir, "/", "vis1data.sav", sep = ""))
 
 # v1.1
+plot11t <- behavt %>%
+  group_by(condition,Rank) %>%
+  ggplot(aes(x=Rank, y=BinRT, group=BinRT, color= condition)) +
+  geom_point() +
+  geom_line(aes(color=condition)) +
+  theme_bw() +
+#  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.1) +
+  labs(x = "Bin", y = "Response Time (in milliseconds)",
+       color="Condition")
+plot11t
+
 plot11 <- ggplot(data=tg, aes(x=Rank, y=mean, color= condition)) +
   geom_point() +
   geom_line(aes(color=condition)) +

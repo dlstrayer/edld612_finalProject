@@ -6,7 +6,7 @@ output:
     vertical_layout: fill
 ---
 
-```{r setup, include=FALSE}
+```{r, include=TRUE, eval=TRUE}
 library(flexdashboard)
 library(knitr)
 library(rio)
@@ -17,10 +17,17 @@ library(colorblindr)
 library(ggpubr)
 library(cowplot)
 library(scales)
+library(zoo)
+library(here)
+library(tcltk)
+library(haven)
 
 knitr::opts_chunk$set(fig.width=12, fig.height=9, fig.align = "center", message = FALSE, error = FALSE, warning = FALSE)
-theme_set(theme_minimal(base_size = 15))
-options(scipen=999)
+#theme_set(theme_minimal(base_size = 15))
+#options(scipen=999)
+
+vis1data <- read_sav("Data/vis1Data.sav")
+vis3data <- read_sav("Data/vis3DataTEST.sav")
 ```
 
 # Viz 1
@@ -43,7 +50,16 @@ This chart started as blah blah blah
 
 ### Chart C
 
-```{r}
+```{r vis 1, eval=TRUE}
+vis1data <- import(here("data","viz1data.sav"),setclass="tbl_df")
 
+plot11 <- ggplot(vis1data, aes(x=Rank, y=mean, color= condition)) +
+  geom_point() +
+  geom_line(aes(color=condition)) +
+  theme_bw() +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.1) +
+  labs(x = "Bin", y = "Response Time (in milliseconds)",
+       color="Condition")
+plot11
 ```
 

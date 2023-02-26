@@ -1,24 +1,24 @@
 {
-    "id": "3AC1200D",
+    "id": "FC2280E2",
     "path": null,
     "project_path": null,
     "type": "r_dataframe",
     "hash": "0",
     "contents": "",
     "dirty": false,
-    "created": 1677376542458.0,
+    "created": 1677380164791.0,
     "source_on_save": false,
-    "relative_order": 7,
+    "relative_order": 9,
     "properties": {
         "expression": "behav1",
         "caption": "behav1",
         "totalObservations": "405",
         "displayedObservations": "405",
         "variables": "19",
-        "cacheKey": "B4EC2FED",
+        "cacheKey": "7D3F5EA7",
         "object": "behav1",
         "environment": "",
-        "contentUrl": "grid_resource/gridviewer.html?env=&obj=behav1&cache_key=B4EC2FED&max_cols=50",
+        "contentUrl": "grid_resource/gridviewer.html?env=&obj=behav1&cache_key=7D3F5EA7&max_cols=50",
         "preview": "0",
         "source_window_id": "",
         "Source": "Source"
@@ -28,7 +28,7 @@
     "encoding": "",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1677376542458,
+    "last_content_update": 1677380164791,
     "read_only": false,
     "read_only_alternatives": []
 }

@@ -3,25 +3,25 @@
     "path": "~/Downloads/2022:2023 School Year/EDLD 612/612_FinalProject/edld612_finalProject/Scripts/Draft.R",
     "project_path": "Scripts/Draft.R",
     "type": "r_source",
-    "hash": "862978333",
+    "hash": "4099833042",
     "contents": "",
     "dirty": false,
     "created": 1677366918527.0,
     "source_on_save": false,
-    "relative_order": 5,
+    "relative_order": 4,
     "properties": {
         "tempName": "Untitled1",
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "63,0",
-        "scrollLine": "48"
+        "cursorPosition": "92,0",
+        "scrollLine": "77"
     },
     "folds": "",
-    "lastKnownWriteTime": 1677376693,
+    "lastKnownWriteTime": 1677380775,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1677376693838,
+    "last_content_update": 1677380775937,
     "read_only": false,
     "read_only_alternatives": []
 }

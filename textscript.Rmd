@@ -1,0 +1,95 @@
+---
+title: "Deanna"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r, include=TRUE, eval=TRUE}
+library(flexdashboard)
+library(knitr)
+library(rio)
+library(tidyverse)
+library(car)
+library(extrafont)
+library(colorblindr)
+library(ggpubr)
+library(cowplot)
+library(scales)
+library(zoo)
+library(here)
+library(tcltk)
+library(haven)
+
+knitr::opts_chunk$set(fig.width=12, fig.height=9, fig.align = "center", message = FALSE, error = FALSE, warning = FALSE)
+#theme_set(theme_minimal(base_size = 15))
+#options(scipen=999)
+
+vis1data <- as.data.frame(read_sav("Data/vis1Data.sav"))
+vis3data <- read_sav("Data/vis3DataTEST.sav")
+```
+
+# Viz 1
+
+Column {data-width=400}
+-----------------------------------------------------------------------
+
+### Final Figure 1
+
+```{r vis 13, eval=TRUE}
+plot13 <- ggplot(data=vis1data, aes(x=Rank, y=mean, color= as.factor(condition), linetype=as.factor(condition))) +
+  geom_point() +
+  geom_line(aes(linetype=as.factor(condition), color=as.factor(condition))) +
+  theme_bw() +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.1) +
+  labs(x = "Bin", y = "Response Time (in milliseconds)",
+       color="Condition", linetype="Condition") +
+  scale_color_manual(name= "Condition", labels = c("Control", "Goal"), values = c("black", "dark green")) +
+  scale_linetype_manual(name="Condition", labels = c("Control", "Goal"), values=c(4,1)) +
+  theme(axis.text.x = element_text(size = 60))+
+  theme_minimal()
+plot13
+
+```
+
+> This is the final figure.
+
+Column {data-width=400}
+-----------------------------------------------------------------------
+
+### Second Generation Figure 1
+
+```{r vis 12, eval=TRUE}
+plot12 <- ggplot(data=vis1data, aes(x=Rank, y=mean, color= as.factor(condition), linetype=as.factor(condition))) +
+  geom_point() +
+  geom_line(aes(linetype=as.factor(condition), color=as.factor(condition))) +
+  theme_bw() +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.1) +
+  labs(x = "Bin", y = "Response Time (in milliseconds)",
+       color="Condition", linetype="Condition") +
+  scale_color_manual(name= "Condition", labels = c("Control", "Goal"), values = c("black", "dark green")) +
+  scale_linetype_manual(name="Condition", labels = c("Control", "Goal"), values=c(4,1))
+plot12
+
+
+```
+
+> This is the second attempt.
+
+### First Generation Figure 1
+
+```{r vis 11, eval=TRUE}
+vis1data <- import(here("data","vis1data.sav"),setclass="tbl_df")
+
+plot11 <- ggplot(vis1data, aes(x=Rank, y=mean, color= as.factor(condition))) +
+  geom_point() +
+  geom_line(aes(color=as.factor(condition))) +
+  theme_bw() +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.1) +
+  labs(x = "Bin", y = "Response Time (in milliseconds)",
+       color="Condition")
+plot11
+```
+
+> This is the first attempt.

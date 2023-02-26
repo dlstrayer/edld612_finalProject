@@ -23,6 +23,12 @@ pupilData2 <- melt(pupilData2, id=c("Subject"))
 pupilData3 <- pupilData[1:81,]
 plotData <- left_join(pupilData3, pupilData2, "Subject", multiple = "all")
 
+pupilDataOop <- plotData4 %>%
+  group_by(value.x, variable.y) %>%
+  summarize(meanEye = mean(value.y),
+            bin2 = mean(bin))
+  
+
 # 
 
 library(gganimate)
@@ -36,8 +42,25 @@ oop <- ddply(plotData4, c("value.x", "bin"), summarise,
              sd=sd(value.y),
              se=sd/sqrt(N)) 
 
+oop <- ddply(plotData4, c("value.x", "bin"), summarise,
+             N=length(!is.na(value.y)),
+             mean=mean(value.y),
+             sd=sd(value.y),
+             se=sd/sqrt(N)) 
+
+x<-rep(c(1:100),times=6)
+
+oop[7] <- x
+
+oopF <- ddply(oop, c("value.x", "V7"), summarise,
+             N=length(!is.na(mean)),
+             mean=mean(mean),
+             sd=sd(mean),
+             se=sd/sqrt(N)) 
+
 write_sav(oop2, path = paste(dir, "/", "vis3dataTEST.sav", sep = ""))
 oop2 <- oop[1:597,]
+
 oopPlot <- oop2 %>% 
   ggplot( aes(x=bin, y=mean, group=value.x, color=value.x)) +
   geom_line() +
@@ -47,8 +70,20 @@ oopPlot <- oop2 %>%
   ylab("Pupil Diameter") +
   theme(legend.position="none") +
   transition_reveal(bin)
+oopPlot
 
-  animate(oopPlot, height = 4,
+oopPlotF <- oopF %>% 
+  ggplot( aes(x=V7, y=mean, group=value.x, color=value.x)) +
+  geom_line() +
+  geom_point() +
+  ggtitle("Pupil Response by Bin") +
+  theme_ipsum() +
+  ylab("Pupil Diameter") +
+  theme(legend.position="none") +
+  transition_reveal(V7)
+oopPlotF
+
+  animate(oopPlotF, height = 4,
         width = 4, units = "in", res = 150)
   anim_save("pupil by time bin.gif")
 

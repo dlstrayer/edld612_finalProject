@@ -7,7 +7,7 @@ library(tcltk)
 library(haven)
 
 
-eyeData <- import(here("data","Eye4CRT Behavioral SPSS for EDLD Project.sav"),setclass="tbl_df")
+eyeData3 <- import(here("data","Eye4CRT Behavioral SPSS for EDLD Project.sav"),setclass="tbl_df")
   
 eyeData2 <- eyeData %>% 
   arrange(Subject, totalCorrectRTs) %>%

@@ -199,7 +199,7 @@ Column {data-width=200}
 ### Final Visual 3
 ```{r vis 33, eval=TRUE, fig.width=4, fig.height=4}
 
-gif_file('pupil by time bin.gif')
+gif_file('pupil by time bin 3.gif')
 #gifski_renderer(file = 'pupil by time bin.gif', loop = TRUE, width = NULL, height = NULL)
 
 ```

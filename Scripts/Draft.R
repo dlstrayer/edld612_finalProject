@@ -111,7 +111,28 @@ oopPlotF
   anim_save("pupil by time bin 2.gif")
   
   
+  oopPlotF3 <- oopF %>% 
+    ggplot( aes(x=V7, y=mean, group=as.factor(value.x), color=as.factor(value.x))) +
+    geom_line(aes(lty = as.factor(value.x))) +
+    geom_point() +
+    ggtitle("Pupil Size Change by Bin") +
+    ylab("Pupil Diameter") +
+    labs(x = "Time Bin", y = "Pupil Diamemter (in arbitrary units)",
+         color="Condition",
+         title="Goal-Setting Increases Attentional Effort",
+         subtitle="Pupil Dilation after Target-Onset by Condition",) +
+    scale_color_manual(name= "Condition", labels = c("Control", "Goal"), values = c("#56B4E9", "#CC79A7")) +
+    scale_linetype_manual(values = c("1" = "dashed", # assign line types to groups
+                                     "2" = "solid"),
+                          guide = FALSE) +
+    theme_minimal()+
+    theme(legend.position="none") +
+    transition_reveal(V7)
+  oopPlotF3
   
+  animate(oopPlotF3, height = 4,
+          width = 4, units = "in", res = 150)
+  anim_save("pupil by time bin 3.gif")
 #################################################
 
 # First draft of Plot 1

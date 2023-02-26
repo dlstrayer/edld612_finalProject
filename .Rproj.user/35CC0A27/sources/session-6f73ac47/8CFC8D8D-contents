@@ -31,6 +31,9 @@ knitr::opts_chunk$set(fig.width=12, fig.height=9, fig.align = "center", message 
 #options(scipen=999)
 
 vis1data <- as.data.frame(read_sav("Data/vis1Data.sav"))
+vis2data <- as.data.frame(read_sav("Data/vis2Data.sav"))
+vis2data$condition <- as.numeric(vis2data$condition)
+vis2data2 <- as.data.frame(read_sav("Data/vis2Data2.sav"))
 vis3data <- read_sav("Data/vis3DataTEST.sav")
 ```
 
@@ -118,37 +121,110 @@ plot11
 > This is the first attempt.
 
 
-
 # Vis 2
 
 Column {data-width=200}
-----------------------
+-----------------------------------------------------------------------
 
+### Final Visual 2
 ```{r vis 23, eval=TRUE}
 
+plot23 <- ggplot(data=vis2data, aes(x=as.factor(condition), y=meanRT, color=as.factor(condition))) +
+  geom_jitter(width = 0.25, alpha = 0.5, size = 5) +
+  theme_bw() +
+  labs(x = "Condition", y = "Average Response Time (in milliseconds)",
+       color="Condition", linetype="Condition",
+       title="Goal-Setting Improves Task Performance",
+       subtitle="Average Response Times by Condition during 4-ChoiceRT") +
+  scale_x_discrete(labels=c("1" = "Non-specific Goal", "2" = "Harder-over-time Goal")) +
+  scale_color_manual(name= "Condition", labels = c("Control", "Goal"), values = c("#F0E442", "#CC79A7")) +
+  scale_linetype_manual(name="Condition", labels = c("Control", "Goal"), values=c(4,1)) +
+  theme_minimal() +
+  geom_segment(data = filter(vis2data2, condition == 1), aes(x = 0.75, xend = 1.25, y = mean, yend = mean), linetype = "dashed", size = .75, color = "black") + 
+  geom_segment(data = filter(vis2data2, condition == 2), aes(x = 1.75, xend = 2.25, y = mean, yend = mean), linetype = "dashed", size = .75, color = "black") + 
+  theme(legend.position="none",
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(face = "bold", hjust = 0.5),
+        axis.title=element_text(size=24,face="bold"),
+        axis.text=element_text(size=24),
+        title=element_text(size=24))
+plot23
+
+
+```
+
+> This is Vis 2.
+
+Column {data-width=200}
+-----------------------------------------------------------------------
+
+### Second Generation Visual 2
+```{r vis 22, eval=TRUE, fig.width=4, fig.height=4}
+
+plot22 <- ggplot(data=vis2data, aes(x=as.factor(condition), y=meanRT, color=as.factor(condition))) +
+  geom_jitter() +
+  theme_bw() +
+  labs(x = "Bin", y = "Response Time (in milliseconds)",
+       color="Condition", linetype="Condition") +
+  scale_color_manual(name= "Condition", labels = c("Control", "Goal"), values = c("black", "dark green")) +
+  scale_linetype_manual(name="Condition", labels = c("Control", "Goal"), values=c(4,1)) +
+  theme_minimal()
+plot22
+
+```
+
+> This was the second version.
+
+### First Generation Visual 2
+```{r vis 21, eval=TRUE, fig.width=4, fig.height=4}
+
+plot21 <- ggplot(data=vis2data, aes(x=as.factor(condition), y=meanRT)) +
+  geom_boxplot() +
+  theme_bw() +
+  labs(x = "Bin", y = "Response Time (in milliseconds)",
+       color="Condition", linetype="Condition") +
+  scale_color_manual(name= "Condition", labels = c("Control", "Goal"), values = c("black", "dark green")) +
+  scale_linetype_manual(name="Condition", labels = c("Control", "Goal"), values=c(4,1))
+plot21
+
+```
+
+> This was the first version.
+
+# Vis 3
+
+Column {data-width=200}
+-----------------------------------------------------------------------
+
+### Final Visual 3
+```{r vis 33, eval=TRUE, fig.width=4, fig.height=4}
 
 gif_file('pupil by time bin.gif')
 #gifski_renderer(file = 'pupil by time bin.gif', loop = TRUE, width = NULL, height = NULL)
 
 ```
 
-> This is Vis 2.
+> This is Vis 3.
 
-```{r vis 22, eval=TRUE}
+Column {data-width=200}
+-----------------------------------------------------------------------
+
+### Second Generation Visual 3
+```{r vis 32, eval=TRUE, fig.width=4, fig.height=4}
 
 
-
+gif_file('pupil by time bin 2.gif')
 
 
 ```
 
 > This was the second version.
 
+### First Generation Visual 3
+```{r vis 31, eval=TRUE, fig.width=4, fig.height=4}
 
-```{r vis 21, eval=TRUE}
 
-
-
+gif_file('pupil by time bin.gif')
 
 
 ```

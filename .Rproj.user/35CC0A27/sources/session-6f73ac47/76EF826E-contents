@@ -87,7 +87,31 @@ oopPlotF
         width = 4, units = "in", res = 150)
   anim_save("pupil by time bin.gif")
 
-
+  oopPlotF2 <- oopF %>% 
+    ggplot( aes(x=V7, y=mean, group=as.factor(value.x), color=as.factor(value.x))) +
+    geom_line(aes(lty = as.factor(value.x))) +
+    geom_point() +
+    ggtitle("Pupil Size Change by Bin") +
+    ylab("Pupil Diameter") +
+    labs(x = "Time Bin", y = "Pupil Diamemter (in arbitrary units)",
+         color="Condition",
+         title="Goal-Setting Increases Attentional Effort",
+         subtitle="Pupil Dilation after Target-Onset by Condition",) +
+    scale_color_manual(name= "Condition", labels = c("Control", "Goal"), values = c("black", "dark green")) +
+    scale_linetype_manual(values = c("1" = "dashed", # assign line types to groups
+                                     "2" = "solid"),
+                          guide = FALSE) +
+    theme_minimal()+
+    theme(legend.position="none") +
+    transition_reveal(V7)
+  oopPlotF2
+  
+  animate(oopPlotF2, height = 4,
+          width = 4, units = "in", res = 150)
+  anim_save("pupil by time bin 2.gif")
+  
+  
+  
 #################################################
 
 # First draft of Plot 1
@@ -200,9 +224,51 @@ second_to_last_quarter <- max(tg$Rank[tgf$Rank != max(tg$Rank)])
 
 # First Draft of Plot 2
 
+p2data <- behav
+
+dir <- tclvalue(tkchooseDirectory())
+write_sav(p2data, path = paste(dir, "/", "vis2data.sav", sep = ""))
+
+plot21 <- ggplot(data=p2data, aes(x=condition, y=meanRT)) +
+  geom_boxplot() +
+  theme_bw() +
+  labs(x = "Bin", y = "Response Time (in milliseconds)",
+       color="Condition", linetype="Condition") +
+  scale_color_manual(name= "Condition", labels = c("Control", "Goal"), values = c("black", "dark green")) +
+  scale_linetype_manual(name="Condition", labels = c("Control", "Goal"), values=c(4,1))
+plot21
+
+plot22 <- ggplot(data=p2data, aes(x=condition, y=meanRT, color=condition)) +
+  geom_jitter() +
+  theme_bw() +
+  labs(x = "Bin", y = "Response Time (in milliseconds)",
+       color="Condition", linetype="Condition") +
+  scale_color_manual(name= "Condition", labels = c("Control", "Goal"), values = c("black", "dark green")) +
+  scale_linetype_manual(name="Condition", labels = c("Control", "Goal"), values=c(4,1)) +
+  theme_minimal()
+plot22
 
 
+p2data2 <- p2data %>% 
+  group_by(condition) %>% 
+  summarize(mean = mean(meanRT))
+write_sav(p2data2, path = paste(dir, "/", "vis2data2.sav", sep = ""))
 
-
-
+plot23 <- ggplot(data=p2data, aes(x=condition, y=meanRT, color=condition)) +
+  geom_jitter(width = 0.25, alpha = 0.5, size = 3) +
+  theme_bw() +
+  labs(x = "Condition", y = "Average Response Time (in milliseconds)",
+       color="Condition", linetype="Condition",
+       title="Goal-Setting Improves Task Performance",
+       subtitle="Average Response Times by Condition during 4-ChoiceRT") +
+  scale_x_discrete(labels=c("1" = "No-Goal", "2" = "Harder-over-time Goal")) +
+  scale_color_manual(name= "Condition", labels = c("Control", "Goal"), values = c("#F0E442", "#CC79A7")) +
+  scale_linetype_manual(name="Condition", labels = c("Control", "Goal"), values=c(4,1)) +
+  theme_minimal() +
+  geom_segment(data = filter(p2data2, condition == "1"), aes(x = 0.75, xend = 1.25, y = mean, yend = mean), linetype = "dashed", size = .75, color = "black") + 
+  geom_segment(data = filter(p2data2, condition == "2"), aes(x = 1.75, xend = 2.25, y = mean, yend = mean), linetype = "dashed", size = .75, color = "black") + 
+  theme(legend.position="none",
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(face = "bold", hjust = 0.5))
+plot23
 

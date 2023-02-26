@@ -8,9 +8,24 @@ output:
 
 ```{r setup, include=FALSE}
 library(flexdashboard)
+library(knitr)
+library(rio)
+library(tidyverse)
+library(car)
+library(extrafont)
+library(colorblindr)
+library(ggpubr)
+library(cowplot)
+library(scales)
+
+knitr::opts_chunk$set(fig.width=12, fig.height=9, fig.align = "center", message = FALSE, error = FALSE, warning = FALSE)
+theme_set(theme_minimal(base_size = 15))
+options(scipen=999)
 ```
 
-Column {data-width=650}
+# Viz 1
+
+Column {data-width=600}
 -----------------------------------------------------------------------
 
 ### Chart A
@@ -19,7 +34,7 @@ Column {data-width=650}
 
 ```
 
-Column {data-width=350}
+Column {data-width=400}
 -----------------------------------------------------------------------
 
 ### Chart B

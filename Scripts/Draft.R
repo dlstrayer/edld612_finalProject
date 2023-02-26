@@ -35,6 +35,28 @@ plotData2 %>%
   transition_reveal(bin)
 
 
+#################################################
+
+# First draft of Plot 1
+
+# Data
+behav <- read_sav("Data/eye4crt Ranked agg.sav")
+
+behav$condition <- as.factor(behav$condition)
+behav1 <- behav %>%
+  gather(key = "Rank", value = "BinRT", meanRank1, meanRank2, meanRank3, meanRank4, meanRank5)
+behav1$Rank = as.numeric(behav1$Rank)
+
+behav2 <- behav1 %>%
+  pivot_wider(names_from = Rank, values_from = BinRT)
+
+tg <- ddply(behav1, c("condition", "Rank"), summarise,
+            N=length(!is.na(BinRT)),
+            mean=mean(BinRT),
+            sd=sd(BinRT),
+            se=sd/sqrt(N)) 
+
+
 
 
 
